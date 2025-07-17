@@ -3,6 +3,8 @@ from ultralytics import YOLO
 from PIL import Image
 import torch
 import os
+import cv2
+print("OpenCV version:", cv2.__version__)
 
 # Load model
 model = YOLO('yolov8_model/best.pt')
