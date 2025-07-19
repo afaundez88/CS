@@ -33,7 +33,7 @@ if uploaded_file:
         st.error(f"🚫 File too large: {file_size_mb:.2f} MB. Please upload image < {MAX_FILE_SIZE_MB} MB.")
     else:
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
 
         # Button to trigger detection
         if st.button("🔍 Count Mussels in the Image"):
@@ -46,14 +46,18 @@ if uploaded_file:
                 # 🔄 CLASSIFY SMALL AND BIG
                 small_count = 0
                 big_count = 0
-                AREA_THRESHOLD = 4000  # <-- You can adjust this value based on trial
+                AREA_THRESHOLD = 2500  # <-- You can adjust this value based on trial
 
                 # Convert PIL to NumPy image for OpenCV annotations
                 image_np = np.array(image.convert("RGB"))
 
+                # for box in boxes.xyxy:
+                #     x1, y1, x2, y2 = map(int, box)
+                #     area = (x2 - x1) * (y2 - y1)
                 for box in boxes.xyxy:
                     x1, y1, x2, y2 = map(int, box)
                     area = (x2 - x1) * (y2 - y1)
+                    print("Box area:", area)
 
                     if area < AREA_THRESHOLD:
                         label = "small"
@@ -74,5 +78,6 @@ if uploaded_file:
 
             # Display detection count and result
             st.markdown(f"<h2 style='text-align: center; color: green;'>✅ {small_count + big_count} mussels detected</h2>", unsafe_allow_html=True)
-            st.markdown(f"🟩 **Big mussels**: {big_count}<br>🟨 **Small mussels**: {small_count}", unsafe_allow_html=True)
-            st.image(result_path, caption="Detection Result", use_column_width=True)
+            st.markdown(f"<span style='color:lightgreen; font-size:18px;'>🟩 Big mussels: {big_count}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color:orange; font-size:18px;'>🟨 Small mussels: {small_count}</span>", unsafe_allow_html=True)
+            st.image(result_path, caption="Detection Result", use_container_width=True)
