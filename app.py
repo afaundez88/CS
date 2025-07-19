@@ -46,7 +46,7 @@ if uploaded_file:
                 # 🔄 CLASSIFY SMALL AND BIG
                 small_count = 0
                 big_count = 0
-                AREA_THRESHOLD = 2000  # <-- You can adjust this value based on trial
+                AREA_THRESHOLD = 4000  # <-- You can adjust this value based on trial
 
                 # Convert PIL to NumPy image for OpenCV annotations
                 image_np = np.array(image.convert("RGB"))
