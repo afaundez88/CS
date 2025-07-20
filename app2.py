@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 # Load YOLOv8 model
-model = YOLO('yolov8_model/best2.pt')
+model = YOLO('yolov8_model/best.pt')
 
 # Streamlit config
 st.set_page_config(page_title="🐚 Mussel Detector", layout="centered")
@@ -18,7 +18,7 @@ uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 MAX_FILE_SIZE_MB = 5
 
 # Helper: Resize image while maintaining aspect ratio and padding (letterbox)
-def resize_with_aspect(image, target_size=(640, 480)):
+def resize_with_aspect(image, target_size=(1200, 1600)):
     image_np = np.array(image.convert("RGB"))
     h, w = image_np.shape[:2]
     scale = min(target_size[0] / h, target_size[1] / w)
@@ -52,7 +52,7 @@ if uploaded_file:
 
                 small_count = 0
                 big_count = 0
-                AREA_THRESHOLD = 2500  # in resized image pixels
+                AREA_THRESHOLD = 2000  # in resized image pixels
 
                 for i, (x1, y1, x2, y2) in enumerate(boxes):
                     area = (x2 - x1) * (y2 - y1)
@@ -64,8 +64,8 @@ if uploaded_file:
                     else:
                         small_count += 1
 
-                    cv2.rectangle(resized_img, (x1, y1), (x2, y2), color, 2)
-                    cv2.putText(resized_img, label, (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+                    cv2.rectangle(resized_img, (x1, y1), (x2, y2), color, 1)
+                    cv2.putText(resized_img, label, (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 1)
 
                 # Save result
                 result_path = "result.jpg"
