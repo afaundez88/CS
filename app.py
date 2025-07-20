@@ -9,7 +9,7 @@ import numpy as np  # Needed to work with image arrays
 print("OpenCV version:", cv2.__version__)
 
 # Load model
-model = YOLO('yolov8_model/best2.pt')
+model = YOLO('yolov8_model/best3.pt')
 
 # Set Streamlit page config
 st.set_page_config(page_title="Mussel Detector", layout="centered")
