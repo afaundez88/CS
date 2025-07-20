@@ -87,7 +87,7 @@ if uploaded_file:
 
                 small_count = 0
                 big_count = 0
-                AREA_THRESHOLD = 2000
+                AREA_THRESHOLD = 2500
 
                 for i, (x1, y1, x2, y2) in enumerate(boxes):
                     area = (x2 - x1) * (y2 - y1)
