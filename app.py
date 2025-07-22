@@ -6,7 +6,54 @@ import numpy as np
 import os
 import pandas as pd
 from datetime import datetime
-
+#language selection
+language = st.sidebar.selectbox("🌐 Language / Idioma", ["Español", "English"])
+lang = {
+    "English": {
+        "title": "🐚 Mussel Detector using YOLOv8",
+        "subtitle": "Upload an image of mussels (JPG/PNG)",
+        "upload": "Choose an image",
+        "button": "🔍 Count Mussels in the Image",
+        "error": "🚫 File too large: {:.2f} MB. Max allowed is {} MB.",
+        "spinner": "Detecting mussels...",
+        "image_caption": "Uploaded Image",
+        "label_big": "big",
+        "label_small": "small",
+        "result_title": "✅ {} mussels detected",
+        "big": "🟩 Big mussels: {} ({:.1f}%)",
+        "small": "🟨 Small mussels: {} ({:.1f}%)",
+        "result_image": "Detection Result",
+        "manual_title": "### 📏 Manual Size Entry",
+        "manual_prompt": "Select mussel indexes to label manually",
+        "measurement_label": "Measurement for mussel #{} (in mm)",
+        "save_button": "💾 Save Record",
+        "save_success": "Saved successfully ✅",
+        "view_tab": "📁 Saved Mussel Records",
+        "no_records": "No records found yet."
+    },
+    "Español": {
+        "title": "🐚 Contador de Semillas Standrews",
+        "subtitle": "Sube una imagen de mejillones (JPG/PNG)",
+        "upload": "Elige una imagen",
+        "button": "🔍 Contar Mejillones en la Imagen",
+        "error": "🚫 Archivo demasiado grande: {:.2f} MB. El máximo permitido es {} MB.",
+        "spinner": "Detectando mejillones...",
+        "image_caption": "Imagen subida",
+        "label_big": "grande",
+        "label_small": "pequeño",
+        "result_title": "✅ {} mejillones detectados",
+        "big": "🟩 Mejillones grandes: {} ({:.1f}%)",
+        "small": "🟨 Mejillones pequeños: {} ({:.1f}%)",
+        "result_image": "Resultado de la Detección",
+        "manual_title": "### 📏 Entrada Manual de Tamaño",
+        "manual_prompt": "Selecciona los índices de mejillones para etiquetar manualmente",
+        "measurement_label": "Medida del mejillón #{} (en mm)",
+        "save_button": "💾 Guardar Registro",
+        "save_success": "Guardado exitosamente ✅",
+        "view_tab": "📁 Registros Guardados",
+        "no_records": "No se encontraron registros todavía."
+    }
+}[language]
 # YOLOv8 model path
 model = YOLO('yolov8_model/best.pt')
 
