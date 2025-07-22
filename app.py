@@ -10,7 +10,7 @@ import numpy as np
 model = YOLO('yolov8_model/best.pt')
 
 # Language selection
-language = st.sidebar.selectbox("🌐 Language / Idioma", ["English", "Español"])
+language = st.sidebar.selectbox("🌐 Language / Idioma", ["Español", "English"])
 lang = {
     "English": {
         "title": "🐚 Mussel Detector using YOLOv8",
@@ -28,7 +28,7 @@ lang = {
         "result_image": "Detection Result",
     },
     "Español": {
-        "title": "🐚 Detector de Mejillones usando YOLOv8",
+        "title": "🐚 "Contador de Semillas Standrews",
         "subtitle": "Sube una imagen de mejillones (JPG/PNG)",
         "upload": "Elige una imagen",
         "button": "🔍 Contar Mejillones en la Imagen",
