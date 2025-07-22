@@ -28,7 +28,7 @@ lang = {
         "result_image": "Detection Result",
     },
     "Español": {
-        "title": "🐚 "Contador de Semillas Standrews",
+        "title": "🐚 Contador de Semillas Standrews",
         "subtitle": "Sube una imagen de mejillones (JPG/PNG)",
         "upload": "Elige una imagen",
         "button": "🔍 Contar Mejillones en la Imagen",
