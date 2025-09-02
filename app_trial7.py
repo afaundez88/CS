@@ -19,7 +19,11 @@ db_config = {
 }
 
 # ------------------------- Load YOLOv8 model -------------------------
-model = YOLO('yolov8_model/best.pt')
+try:
+    model = YOLO('yolov8_model/best.pt')
+except Exception as e:
+    st.error(f"Error loading YOLO model: {e}")
+    st.stop()
 
 
 # ------------------------- DB Helper Function -------------------------
@@ -27,23 +31,25 @@ def get_db_connection():
     """Establishes and returns a database connection."""
     return mysql.connector.connect(**db_config)
 
+# REMOVED: The ensure_schema() function was deleted as it was based on incorrect
+# assumptions about your table structure and was causing the app to hang.
 
 # ------------------------- Language selection -------------------------
 language = st.sidebar.selectbox("🌐 Language / Idioma", ["Español", "English"])
 lang = {
     "English": {
-        "title": "🐚 Mussel Detector & Classifier",
+        "title": "🐚 Mussel Detector using YOLOv8",
         "subtitle": "Upload an image of mussels (JPG/PNG)",
         "upload": "Choose an image",
-        "button": "🔍 Detect & Classify Mussels",
+        "button": "🔍 Count Mussels in the Image",
         "save_button": "✅ Save to Database",
         "save_subheader": "💾 Save Results",
         "result_title": "✅ {} mussels detected",
         "big": "🟩 Big mussels: {} ({:.1f}%)",
         "small": "🟨 Small mussels: {} ({:.1f}%)",
-        "manual_entry_header": "✍️ Data for Record",
-        "talla_label": "📏 Average Size (Talla)",
-        "manual_count_label": "🔢 Total Count (Cantidad)",
+        "manual_entry_header": "✍️ Data Entry",
+        "talla_label": "📏 Size (Talla in mm)",
+        "manual_count_label": "🔢 Mussel Count (Cantidad)",
         "save_success": "✅ Data saved to database!",
         "save_error": "❌ Failed to save entry.",
         "db_preview_header": "🔍 Latest 10 entries from `reg_muestreo_siembra`",
@@ -51,18 +57,18 @@ lang = {
         "db_load_error": "❌ Failed to load table preview",
     },
     "Español": {
-        "title": "🐚 Detector y Clasificador de Semillas",
+        "title": "🐚 Contador de Semillas Standrews",
         "subtitle": "Sube una imagen de mejillones (JPG/PNG)",
         "upload": "Elige una imagen",
-        "button": "🔍 Detectar y Clasificar Mejillones",
+        "button": "🔍 Contar Mejillones en la Imagen",
         "save_button": "✅ Guardar en la Base de Datos",
         "save_subheader": "💾 Guardar Resultados",
         "result_title": "✅ {} mejillones detectados",
         "big": "🟩 Mejillones grandes: {} ({:.1f}%)",
         "small": "🟨 Mejillones pequeños: {} ({:.1f}%)",
-        "manual_entry_header": "✍️ Datos para el Registro",
-        "talla_label": "📏 Talla Promedio",
-        "manual_count_label": "🔢 Cantidad Total",
+        "manual_entry_header": "✍️ Ingreso de Datos",
+        "talla_label": "📏 Talla (mm)",
+        "manual_count_label": "🔢 Cantidad de Mejillones",
         "save_success": "✅ ¡Datos guardados en la base de datos!",
         "save_error": "❌ Falló al guardar el registro.",
         "db_preview_header": "🔍 Últimos 10 registros de `reg_muestreo_siembra`",
@@ -116,50 +122,19 @@ if uploaded_file:
         if st.button(lang["button"]):
             with st.spinner('Processing...'):
                 resized_img = resize_with_aspect(image)
-                results = model.predict(resized_img, imgsz=640,conf=0.25)
+                results = model.predict(resized_img, imgsz=640, conf=0.5)
                 boxes = results[0].boxes.xyxy.cpu().numpy().astype(int)
                 
-                # MERGED: Classification logic from the first script
-                small_count = big_count = 0
-                AREA_THRESHOLD = 2500  # Adjust this value to change classification
-                sizes = []
-                annotated_img = resized_img.copy()
-
-                for (x1, y1, x2, y2) in boxes:
-                    area = (x2 - x1) * (y2 - y1)
-                    sizes.append(area)
-                    if area >= AREA_THRESHOLD:
-                        big_count += 1
-                        color = (0, 255, 0)  # Green for big
-                    else:
-                        small_count += 1
-                        color = (0, 255, 255)  # Yellow for small
-                    cv2.rectangle(annotated_img, (x1, y1), (x2, y2), color, 2)
-
                 total_mussels = len(boxes)
-                avg_area = int(np.mean(sizes)) if sizes else 0
                 
-                # Save results to session state to show them consistently
-                st.session_state["result_image"] = cv2.cvtColor(annotated_img, cv2.COLOR_RGB2BGR)
+                st.session_state["result_image_path"] = "resultado.jpg"
                 st.session_state["total"] = total_mussels
-                st.session_state["big_count"] = big_count
-                st.session_state["small_count"] = small_count
-                st.session_state["avg_area"] = avg_area
 
 
 # ------------------------- Show Results and Save Form -------------------------
-if "result_image" in st.session_state:
-    st.image(st.session_state["result_image"], channels="BGR", caption="Detection Result", use_container_width=True)
+if "result_image_path" in st.session_state:
+    st.success(lang["result_title"].format(st.session_state.get("total", 0)))
     
-    total = st.session_state.get("total", 0)
-    big_count = st.session_state.get("big_count", 0)
-    small_count = st.session_state.get("small_count", 0)
-
-    st.success(lang["result_title"].format(total))
-    if total > 0:
-        st.write(lang["big"].format(big_count, (big_count / total * 100)))
-        st.write(lang["small"].format(small_count, (small_count / total * 100)))
-
     st.markdown("---")
     st.subheader(lang["save_subheader"])
     
@@ -180,22 +155,22 @@ if "result_image" in st.session_state:
     temporada_map = pd.Series(temporadas_df.nombre.values, index=temporadas_df.id_temporda).to_dict()
     selected_temporada_id = st.selectbox("📅 Temporada", options=list(temporada_map.keys()), format_func=lambda x: temporada_map.get(x, "N/A"))
     
-    # --- Data Entry Form ---
+    # --- Manual Data Entry Form ---
+    # MODIFIED: Simplified the form to match the 'talla' and 'cantidad' columns in the database.
     st.markdown(f"### {lang['manual_entry_header']}")
     
     col1, col2 = st.columns(2)
     with col1:
-        # The total count is now taken directly from the detection
-        cantidad = st.number_input(lang["manual_count_label"], min_value=0, value=st.session_state.get("total", 0), step=1, disabled=True)
+        cantidad = st.number_input(lang["manual_count_label"], min_value=0, value=st.session_state.get("total", 0), step=1)
     with col2:
-        # The 'talla' is now the calculated average area
-        talla = st.number_input(lang["talla_label"], min_value=0, value=st.session_state.get("avg_area", 0), step=1, disabled=True)
+        talla = st.number_input(lang["talla_label"], min_value=0, step=1)
         
     if st.button(lang["save_button"]):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
             
+            # CORRECTED: The INSERT statement now matches your exact table columns.
             sql = """
                 INSERT INTO reg_muestreo_siembra (
                     fecha, id_area, id_centro, id_linea, id_temporada,
@@ -208,8 +183,8 @@ if "result_image" in st.session_state:
                 selected_centro_id,
                 selected_linea_id,
                 selected_temporada_id,
-                st.session_state.get("total", 0),
-                st.session_state.get("avg_area", 0)
+                cantidad,
+                talla
             )
             
             cursor.execute(sql, values)
@@ -226,6 +201,7 @@ if st.sidebar.checkbox(lang["db_preview_checkbox"]):
     with st.expander(lang["db_preview_header"]):
         try:
             conn = get_db_connection()
+            # CORRECTED: The SELECT statement for the preview now uses the correct columns from your table.
             df = pd.read_sql("SELECT id, fecha, id_area, id_centro, id_linea, cantidad, talla FROM reg_muestreo_siembra ORDER BY id DESC LIMIT 10", conn)
             st.dataframe(df)
             conn.close()
